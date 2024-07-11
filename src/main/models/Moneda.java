@@ -2,15 +2,14 @@ package main.models;
 
 import java.util.Map;
 
+
 public class Moneda {
     private String monedaBase;
     private Map<String,Double> tasaConversion;
-    private FiltroMonedas filtro;
     
     public Moneda(DatosMoneda datosMoneda) {
         this.monedaBase = datosMoneda.monedaBase();
         this.tasaConversion = datosMoneda.tasaConversion();
-        this.filtro = datosMoneda.filtro();
     }
 
     public String getMonedaBase() {
@@ -24,11 +23,11 @@ public class Moneda {
     @Override
     public String toString() {
         return monedaBase + ":\n" +
-                "   Peso Argentino (ARS): " + filtro.ars() + "\n"+
-                "   Boliviano (BOB): " + filtro.bob() + "\n"+
-                "   Real Brasileño (BRL): " + filtro.brl() + "\n"+
-                "   Peso Chileno (CLP): " + filtro.clp() + "\n"+
-                "   Peso Colombiano (COP): " + filtro.cop() + "\n"+
-                "   Dolar Estadounidense (USD): " + filtro.usd() + "\n";
+                "   Peso Argentino (ARS): " + tasaConversion.get("ARS") + "\n"+
+                "   Boliviano (BOB): " + tasaConversion.get("BOB") + "\n"+
+                "   Real Brasileño (BRL): " + tasaConversion.get("BRL") + "\n"+
+                "   Peso Chileno (CLP): " + tasaConversion.get("CLP") + "\n"+
+                "   Peso Colombiano (COP): " + tasaConversion.get("COP") + "\n"+
+                "   Dolar Estadounidense (USD): " + tasaConversion.get("USD") + "\n";
     }
 }

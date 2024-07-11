@@ -1,7 +1,9 @@
 package main.models;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record FiltroMonedas(
         @JsonAlias("ARS") Double ars,
         @JsonAlias("BOB") Double bob,
