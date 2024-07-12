@@ -1,37 +1,36 @@
 package main;
 
-import main.models.DatosConversorMonedas;
-import main.models.DatosMoneda;
-import main.models.Moneda;
-import main.service.ConsumirAPI;
-import main.service.ConvertirDatos;
+import main.models.*;
+import main.service.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 public class Principal {
-    private final String API_KEY = System.getenv("ER_APIKEY");
     Scanner scanner = new Scanner(System.in);
-    ConsumirAPI consumirAPI = new ConsumirAPI();
-    ConvertirDatos convertirDatos = new ConvertirDatos();
     Map<DatosConversorMonedas,Double> historial = new HashMap<>();
-    
+    ListarCodigos codigos = new ListarCodigos();
+    ConvertirValor convertidor = new ConvertirValor();
+    MostrarTasas mostradorTasas = new MostrarTasas();
+    Integer ayudaMenu = -1;
     
     public void showMenu() {
         int i = -1;
         System.out.println("Bienvenido al conversor de monedas de Mournlied");
         while (i != 0) {
+            ayudaMenu = -1;
             System.out.println("""
                     
                     *****************************************************************
-                    Por favor, ingrese el numero de la consulta que desea realizar:
+                    Por favor, ingrese el número de la consulta que desea realizar:
                     
                     1- Ver todas las tasas de conversiones para una moneda
-                    2- Ver las conversiones a ARS, BOB, BRL, CLP, COP y USD para una moneda
-                    3- Ver la tasa de conversion entre dos monedas especificas
+                    2- Ver las conversiones recomendadas para una moneda
+                    3- Ver la tasa de conversión entre dos monedas específicas
                     4- Convertir el valor de una moneda a otra
                     5- Ver historial de valores convertidos
+                    9- Ver lista completa de códigos
                     
                     0- Salir de la aplicación
                     *****************************************************************
@@ -55,58 +54,200 @@ public class Principal {
                 case 5:
                     mostrarHistorial();
                     break;
+                case 9:
+                    codigos.mostrarListaCompleta();
+                    break;
                 case 0:
                     System.out.println("Saliendo de la Aplicación...");
                     System.out.println("Gracias por usar nuestro servicio");
                     break;
                 default:
-                    System.out.println("Opcion inválida");
+                    System.out.println("\n** Opción inválida **");
             }
         }
     }
 
     private void mostrarTasasConversiones() {
-        System.out.println("Ingrese el codigo de tres letras ISO 4217 de la moneda que desea consultar");
-        System.out.println("Ejemplo: USD");
-        String moneda = scanner.nextLine();
-        var json = consumirAPI.consumirAPI("https://v6.exchangerate-api.com/v6/"+ API_KEY + "/latest/" + moneda.toUpperCase());
-        Moneda monedaUsuario = new Moneda(convertirDatos.parseData(json, DatosMoneda.class));
-        monedaUsuario.getTasaConversion().forEach((k,v)-> System.out.println(k+": "+v));
+        while (ayudaMenu != 0) {
+            System.out.println("""
+                    
+                    *****************************************************************
+                    Por favor, ingrese el número de la opción que desea realizar:
+                    
+                    1- Ingresar código de la moneda que desea consultar(Ej: USD)
+                    2- Ver lista de códigos recomendados
+                    3- Ver lista completa de códigos
+                    
+                    9- Volver al menú anterior
+                    *****************************************************************
+                    
+                    """);
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+            switch (opcion){
+                case 1:
+                    System.out.println("Ingrese el código");
+                    String moneda = scanner.nextLine();
+                    if (moneda.length()==3){
+                        mostradorTasas.totalTasas(moneda);
+                        ayudaMenu = 0;
+                    } else {
+                        System.out.println("\n** Código inválido **");
+                    }
+                    break;
+                case 2:
+                    codigos.mostrarListaFiltrada();
+                    break;
+                case 3:
+                    codigos.mostrarListaCompleta();
+                    break;
+                case 9:
+                    ayudaMenu = 0;
+                    break;
+                default:
+                    System.out.println("\n** Opción inválida **");
+            }
+            
+        }
     }
 
     private void mostrarTasasConversionesFiltradas() {
-        System.out.println("Ingrese el codigo de tres letras ISO 4217 de la moneda que desea consultar");
-        System.out.println("Ejemplo: USD");
-        String moneda = scanner.nextLine();
-        var json = consumirAPI.consumirAPI("https://v6.exchangerate-api.com/v6/"+ API_KEY + "/latest/" + moneda.toUpperCase());
-        Moneda monedaUsuario = new Moneda(convertirDatos.parseData(json, DatosMoneda.class));
-        System.out.println(monedaUsuario);
+        while (ayudaMenu != 0) {
+            System.out.println("""
+                    
+                    *****************************************************************
+                    Por favor, ingrese el número de la opción que desea realizar:
+                    
+                    1- Ingresar código de la moneda que desea consultar(Ej: USD)
+                    2- Ver lista de códigos recomendados
+                    3- Ver lista completa de códigos
+                    
+                    9- Volver al menú anterior
+                    *****************************************************************
+                    
+                    """);
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+            switch (opcion){
+                case 1:
+                    System.out.println("Ingrese el código");
+                    String moneda = scanner.nextLine();
+                    if (moneda.length()==3){
+                        mostradorTasas.tasasFiltradas(moneda);
+                        ayudaMenu = 0;
+                    } else {
+                        System.out.println("\n** Código inválido **");
+                    }
+                    break;
+                case 2:
+                    codigos.mostrarListaFiltrada();
+                    break;
+                case 3:
+                    codigos.mostrarListaCompleta();
+                    break;
+                case 9:
+                    ayudaMenu = 0;
+                    break;
+                default:
+                    System.out.println("\n** Opción inválida **");
+            }
+
+        }
     }
     
     private void mostrarTasasEntreMonedas(){
-        System.out.println("Ingrese el codigo de tres letras ISO 4217 de la moneda que desea usar como base");
-        System.out.println("Ejemplo: USD");
-        String monedaBase = scanner.nextLine();
-        System.out.println("Ingrese el codigo de la moneda objetivo");
-        String monedaObjetivo = scanner.nextLine();
-        var json = consumirAPI.consumirAPI("https://v6.exchangerate-api.com/v6/"+ API_KEY + "/pair/"+monedaBase.toUpperCase()+"/"+monedaObjetivo.toUpperCase());
-        var conversion = convertirDatos.parseData(json, DatosConversorMonedas.class);
-        System.out.println("La tasa de conversion de "+conversion.monedaBase()+" a "+conversion.monedaObjetivo()+" es: "+conversion.tasaConversion());
+        while (ayudaMenu != 0) {
+            System.out.println("""
+                    
+                    *****************************************************************
+                    Por favor, ingrese el número de la opción que desea realizar:
+                    
+                    1- Ingresar códigos de la monedas que desea consultar(Ej: USD)
+                    2- Ver lista de códigos recomendados
+                    3- Ver lista completa de códigos
+                    
+                    9- Volver al menú anterior
+                    *****************************************************************
+                    
+                    """);
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+            switch (opcion){
+                case 1:
+                    System.out.println("Ingrese el código de la moneda base");
+                    String monedaBase = scanner.nextLine();
+                    System.out.println("Ingrese el codigo de la moneda objetivo");
+                    String monedaObjetivo = scanner.nextLine();
+                    if (monedaBase.length()==3 && monedaObjetivo.length()==3){
+                        mostradorTasas.tasasEntreMonedas(monedaBase,monedaObjetivo);
+                        ayudaMenu = 0;
+                    } else {
+                        System.out.println("\n** Código(s) inválido(s) **");
+                    }
+                    break;
+                case 2:
+                    codigos.mostrarListaFiltrada();
+                    break;
+                case 3:
+                    codigos.mostrarListaCompleta();
+                    break;
+                case 9:
+                    ayudaMenu = 0;
+                    break;
+                default:
+                    System.out.println("\n** Opción inválida **");
+            }
+
+        }
     }
     
     private void convertirValor(){
-        System.out.println("Ingrese el codigo de tres letras ISO 4217 de la moneda que desea usar como base");
-        System.out.println("Ejemplo: USD");
-        String monedaBase = scanner.nextLine();
-        System.out.println("Ingrese el codigo de la moneda objetivo");
-        String monedaObjetivo = scanner.nextLine();
-        System.out.println("Ingrese el valor que desea convertir");
-        var valor = scanner.nextDouble();
-        var json = consumirAPI.consumirAPI("https://v6.exchangerate-api.com/v6/"+ API_KEY + "/pair/"+monedaBase.toUpperCase()+"/"+monedaObjetivo.toUpperCase()+"/"+valor);
-        var conversion = convertirDatos.parseData(json, DatosConversorMonedas.class);
-        System.out.println(valor+" "+conversion.monedaBase()+" = "+conversion.resultado()+" "+conversion.monedaObjetivo());
-        System.out.println("La tasa de conversion actual es: "+conversion.tasaConversion());
-        historial.put(conversion,valor);
+        while (ayudaMenu != 0) {
+            System.out.println("""
+                    
+                    *****************************************************************
+                    Por favor, ingrese el número de la opción que desea realizar:
+                    
+                    1- Ingresar códigos de la monedas que desea consultar(Ej: USD)
+                    2- Ver lista de códigos recomendados
+                    3- Ver lista completa de códigos
+                    
+                    9- Volver al menú anterior
+                    *****************************************************************
+                    
+                    """);
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+            switch (opcion){
+                case 1:
+                    System.out.println("Ingrese el codigo de la moneda que desea usar como base");
+                    String monedaBase = scanner.nextLine();
+                    System.out.println("Ingrese el codigo de la moneda objetivo");
+                    String monedaObjetivo = scanner.nextLine();
+                    System.out.println("Ingrese el valor que desea convertir (Ej: 123.456)");
+                    var valor = scanner.nextDouble();
+                    if (monedaBase.length()==3 && monedaObjetivo.length()==3){
+                        var conversion = convertidor.convertirValores(valor,monedaBase,monedaObjetivo);
+                        historial.put(conversion,valor);
+                        ayudaMenu = 0;
+                    } else {
+                        System.out.println("\n** Código(s) inválido(s) **");
+                    }
+                    break;
+                case 2:
+                    codigos.mostrarListaFiltrada();
+                    break;
+                case 3:
+                    codigos.mostrarListaCompleta();
+                    break;
+                case 9:
+                    ayudaMenu = 0;
+                    break;
+                default:
+                    System.out.println("\n** Opción inválida **");
+            }
+
+        }
     }
 
     private void mostrarHistorial(){
